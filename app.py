@@ -85,10 +85,8 @@ async def main():
     if not BOT_TOKEN or not API_KEY or GUILD_ID == 0:
         raise Exception("Bot token or API key not found. Make sure they're set in '.env'")
     
-    ssl_context = ('/ssl_cert/cert.pem', '/ssl_cert/key.pem')
-    
     # we need to start flask in a diff thread so the discord bot doesnt stop the flask app running
-    flask_thread = Thread(target = app.run, kwargs = {"host": "0.0.0.0", "port": 80, "ssl_context": ssl_context})
+    flask_thread = Thread(target = app.run, kwargs = {"host": "0.0.0.0", "port": 6969,})
     flask_thread.daemon = True 
     flask_thread.start() 
     
