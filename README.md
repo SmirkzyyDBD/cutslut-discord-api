@@ -38,7 +38,7 @@ API_KEY=your_secure_api_key
 GUILD_ID=your_discord_server_id
 ```
 
-- **DISCORD_BOT_TOKEN**: The token for your Discord bot.
+- **BOT_TOKEN**: The token for your Discord bot.
 - **API_KEY**: A secure key for API authorization.
 - **GUILD_ID**: The ID of the Discord server to monitor.
 
@@ -158,13 +158,17 @@ Asynchronously retrieves the status and activity of a user by ID from a specific
 To run the bot and the API service concurrently:
 
 Windows:
+
 ```bash
 python app.py
 ```
+
 Linux:
+
 ```bash
 python3 app.py
 ```
+
 ---
 
 ## Troubleshooting
