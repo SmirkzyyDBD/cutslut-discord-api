@@ -157,10 +157,14 @@ Asynchronously retrieves the status and activity of a user by ID from a specific
 
 To run the bot and the API service concurrently:
 
+Windows:
 ```bash
 python app.py
 ```
-
+Linux:
+```bash
+python3 app.py
+```
 ---
 
 ## Troubleshooting
