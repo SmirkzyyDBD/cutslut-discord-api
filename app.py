@@ -26,7 +26,7 @@ def fetch_user(user_id):
         "display_name": user_data.get("display_name", "Unknown"),
         "profile_picture": user_data.get("profile_picture", ""),
     }
-    # https://cdn.discordapp.com/app-assets/{application_id}/{image_key}.png
+
 @app.route("/api/v1/userStatus", methods=["GET"])
 def get_user():
     api_key = request.headers.get("Authorization")
@@ -48,7 +48,26 @@ async def fetch_user_status(user_id):
     if guild:
         member = guild.get_member(int(user_id))
         if member:
-            activities = [{"name": activity.name, "type": str(activity.type)} for activity in member.activities]
+            activities = []
+            for activity in member.activities:
+                if isinstance(activity, discord.CustomActivity):
+                    activity_data = {
+                        "name": activity.name,
+                        "type": "CustomActivity",
+                        "state": activity.state,
+                        "large_image_url": None,
+                        "small_image_url": None
+                    }
+                else:  # Handle other rich presence activities
+                    activity_data = {
+                        "name": activity.name,
+                        "type": str(activity.type),
+                        "details": getattr(activity, "details", None),
+                        "state": getattr(activity, "state", None),
+                        "large_image_url": getattr(activity, "large_image_url", None),
+                        "small_image_url": getattr(activity, "small_image_url", None)
+                    }
+                activities.append(activity_data)
             return {
                 "status": str(member.status),
                 "activities": activities,
