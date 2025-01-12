@@ -65,7 +65,7 @@ Retrieves status and activity details for a specific Discord user.
 #### **Example Request (CURL)**
 
 ```bash
-curl -H "Authorization: your_secure_api_key" "http://localhost:5000/api/v1/userStatus?user_id=123456789012345678"
+curl -H "Authorization: your_secure_api_key" "http://localhost:6969/api/v1/userStatus?user_id=123456789012345678"
 ```
 
 #### **Example Request (TypeScript)**
@@ -75,7 +75,7 @@ const fetch = require("node-fetch");
 
 async function getUserStatus(userId: string) {
   const response = await fetch(
-    `http://localhost:5000/api/v1/userStatus?user_id=${userId}`,
+    `http://localhost:6969/api/v1/userStatus?user_id=${userId}`,
     {
       method: "GET",
       headers: {
