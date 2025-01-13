@@ -3,6 +3,7 @@ from threading import Thread
 from discord.ext import commands
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -11,9 +12,18 @@ bot = commands.Bot(command_prefix = "+", intents = intents)
 
 app = Flask(__name__)
 
+CORS(app, resources={ # cors bc everything dies otherwise
+    r"/*": {
+        "origins": ["https://cutslut.app", "https://egirls.date"], # bhvr.gay in the fututure mayabe (they are gay)
+        "methods": ["GET"],
+        "allow_headers": ["Authorization", "Content-Type"]
+    }
+})
+
 API_KEY = os.getenv("API_KEY")
 GUILD_ID = int(os.getenv("GUILD_ID", 0)) # if not in the server, guild ID will be 0
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+WELCOME_WEBHOOK = os.getenv("WELCOME_WEBHOOK")
 
 user_status_data = {} # store thingt data for users ;))
 
@@ -80,13 +90,22 @@ async def fetch_user_status(user_id):
 @bot.event
 async def on_ready():
     print(f"[+] {bot.user} is online")
+    
+@bot.event
+async def on_member_join(member):
+    # Send a message using a webhook for easier intagration
+    webhook_url = WELCOME_WEBHOOK
+    message_content = f"New user joined: {member.name}#{member.discriminator}"
+    
+    async with discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter()) as webhook:
+        await webhook.send(message_content, username="cutslut.app")
 
 async def main():
     if not BOT_TOKEN or not API_KEY or GUILD_ID == 0:
         raise Exception("Bot token or API key not found. Make sure they're set in '.env'")
     
     # we need to start flask in a diff thread so the discord bot doesnt stop the flask app running
-    flask_thread = Thread(target = app.run, kwargs = {"host": "0.0.0.0", "port": 6969,})
+    flask_thread = Thread(target = app.run, kwargs = {"host": "0.0.0.0", "port": 80,})
     flask_thread.daemon = True 
     flask_thread.start() 
     
