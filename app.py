@@ -95,10 +95,16 @@ async def on_ready():
 async def on_member_join(member):
     # Send a message using a webhook for easier intagration
     webhook_url = WELCOME_WEBHOOK
-    message_content = f"New user joined: {member.name}#{member.discriminator}"
+    embed = discord.Embed (
+        title = member.guild.name,
+        description = f"Welcome {member.name} to the {member.guild.name} Discord server!\nPlease familiarize yourself with the rules.",
+        color = discord.Color.black()
+    )
+    embed.set_thumbnail(url = member.avatar.url if member.avatar else member.default_avatar.url)
+    embed.set_footer(text = f"User ID: {member.id}")
     
     async with discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter()) as webhook:
-        await webhook.send(message_content, username="cutslut.app")
+        await webhook.send(embed = embed, username="cutslut.app")
 
 async def main():
     if not BOT_TOKEN or not API_KEY or GUILD_ID == 0:
