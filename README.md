@@ -1,12 +1,12 @@
 # Cutslut Discord API Bot Documentation
 
-This documentation outlines the usage and structure of the Cutslut Discord API bot, which tracks user status, activity, and profile information for [cutslut.app](https://cutslut.app).
+This documentation outlines the usage, structure, and features of the Cutslut Discord API bot. The bot tracks user status, activity, and profile information for [cutslut.app](https://cutslut.app) and integrates Flask for API handling and Discord.py for server interaction.
 
 ---
 
 ## Overview
 
-The bot provides an API endpoint to check user status and activity within a Discord server by their user ID. It integrates with Flask for API handling and Discord.py for interacting with Discord servers.
+The bot serves as a bridge between Discord and an external website, providing API endpoints that allow querying of user statuses and other data by user ID. The bot features role automation, health checks, and version tracking, alongside user-specific data retrieval.
 
 ---
 
@@ -15,8 +15,8 @@ The bot provides an API endpoint to check user status and activity within a Disc
 - Python 3.11.5+
 - Discord bot token
 - API key for secure access
-- Libraries in `requirements.txt` installed
-- Environment variables setup (.env file)
+- Libraries listed in `requirements.txt`
+- Properly configured environment variables in a `.env` file
 
 ### **Required Libraries**
 
@@ -30,31 +30,131 @@ pip install -r requirements.txt
 
 ## Environment Configuration
 
-Create a `.env` file in the root of your project:
+Create a `.env` file in the project root with the following variables:
 
 ```
-API_VERSION=api_version (e.g: 1.0.0)
+API_VERSION=1.0.0
 BOT_TOKEN=your_actual_discord_bot_token
 API_KEY=your_secure_api_key
 GUILD_ID=your_discord_server_id
 WELCOME_WEBHOOK=webhook_link
+LOGS_WEBHOOK=logs_webhook_link
 API_HEALTH=health_check_api_route
-API_VERSION=api_version_route
 WEBSITE_URL=base_website_url
+USER_ROLE=user_role_id
 ```
 
-- **API_VERSION**: The version your API is on.
-- **BOT_TOKEN**: The token for your Discord bot.
-- **API_KEY**: A secure key for API authorization.
-- **GUILD_ID**: The ID of the Discord server to monitor.
-- **WELCOME_WEBHOOK**: Your Discord webhook link.
-- **API_HEALTH**: API route for your health check.
-- **API_VERSION**: API Route for your version check.
-- **WEBSITE_URL**: Base website URL.
+- **API_VERSION**: Version of the bot’s API.
+- **BOT_TOKEN**: Token for the Discord bot.
+- **API_KEY**: Secure key for API requests.
+- **GUILD_ID**: Discord server ID.
+- **WELCOME_WEBHOOK**: Webhook for welcome messages.
+- **LOGS_WEBHOOK**: Webhook for logging important events.
+- **API_HEALTH**: URL to check API health.
+- **WEBSITE_URL**: URL of the associated website.
+- **USER_ROLE**: Role ID to assign to new members.
 
 ---
 
-## API Endpoint
+## API Endpoints
+
+### **GET /api/v1/version**
+
+Returns the current API version.
+
+#### **Headers**
+
+| Header        | Type   | Description                |
+| ------------- | ------ | -------------------------- |
+| Authorization | string | API key for authentication |
+
+#### **Example Request (CURL)**
+
+```bash
+curl -H "Authorization: your_secure_api_key" "http://localhost:80/api/v1/version"
+```
+
+#### **Example Request (TypeScript)**
+
+```typescript
+const fetch = require("node-fetch");
+
+async function getVersion() {
+  const response = await fetch("http://localhost:80/api/v1/version", {
+    method: "GET",
+    headers: {
+      Authorization: "your_secure_api_key",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log(data);
+}
+getVersion();
+```
+
+#### **Response**
+
+```json
+{
+  "version": "1.0.0"
+}
+```
+
+---
+
+### **GET /api/v1/healthcheck**
+
+Performs a health check.
+
+#### **Headers**
+
+| Header        | Type   | Description                |
+| ------------- | ------ | -------------------------- |
+| Authorization | string | API key for authentication |
+
+#### **Example Request (CURL)**
+
+```bash
+curl -H "Authorization: your_secure_api_key" "http://localhost:80/api/v1/healthcheck"
+```
+
+#### **Example Request (TypeScript)**
+
+```typescript
+const fetch = require("node-fetch");
+
+async function healthCheck() {
+  const response = await fetch("http://localhost:80/api/v1/healthcheck", {
+    method: "GET",
+    headers: {
+      Authorization: "your_secure_api_key",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log(data);
+}
+healthCheck();
+```
+
+#### **Response**
+
+```json
+{
+  "health": "Alive"
+}
+```
+
+---
 
 ### **GET /api/v1/userStatus**
 
@@ -75,7 +175,7 @@ Retrieves status and activity details for a specific Discord user.
 #### **Example Request (CURL)**
 
 ```bash
-curl -H "Authorization: your_secure_api_key" "http://localhost:6969/api/v1/userStatus?user_id=123456789012345678"
+curl -H "Authorization: your_secure_api_key" "http://localhost:80/api/v1/userStatus?user_id=123456789012345678"
 ```
 
 #### **Example Request (TypeScript)**
@@ -85,7 +185,7 @@ const fetch = require("node-fetch");
 
 async function getUserStatus(userId: string) {
   const response = await fetch(
-    `http://localhost:6969/api/v1/userStatus?user_id=${userId}`,
+    `http://localhost:80/api/v1/userStatus?user_id=${userId}`,
     {
       method: "GET",
       headers: {
@@ -101,7 +201,6 @@ async function getUserStatus(userId: string) {
   const data = await response.json();
   console.log(data);
 }
-
 getUserStatus("123456789012345678");
 ```
 
@@ -109,90 +208,93 @@ getUserStatus("123456789012345678");
 
 ```json
 {
+  "status": "online",
   "activities": [
     {
-      "details": "Debugging app.py",
-      "large_image_url": "https://cdn.discordapp.com/app-assets/383226320970055681/565945350645481492.png",
       "name": "Visual Studio Code",
-      "small_image_url": "https://cdn.discordapp.com/app-assets/383226320970055681/565949878753165353.png",
-      "state": "Debugging: cutslut_discord_api",
-      "type": "ActivityType.playing"
+      "type": "ActivityType.playing",
+      "details": "Debugging app.py",
+      "state": "Writing bot documentation",
+      "large_image_url": "https://example.com/large.png",
+      "small_image_url": "https://example.com/small.png"
     }
   ],
-  "display_name": "smirkzyy",
-  "profile_picture": "https://cdn.discordapp.com/avatars/641652579310239746/edc82e420fe354a2929a50b746f9a44e.png?size=1024",
-  "status": "dnd",
-  "username": "smirkzyy"
+  "username": "smirkzyy",
+  "display_name": "Smirkzyy",
+  "profile_picture": "https://cdn.discordapp.com/avatars/1234567890/avatar.png"
 }
 ```
 
-#### **Error Responses**
-
-| Status Code | Message              | Description                             |
-| ----------- | -------------------- | --------------------------------------- |
-| 401         | Unauthorized         | Invalid or missing API key              |
-| 400         | user_id not provided | No user ID was supplied in the request  |
-| 404         | User not found       | The user ID was not found in the server |
-
 ---
 
-## Code Structure
+## Bot Commands and Events
 
-### **fetch_user_status(user_id)**
+### **Commands**
 
-Asynchronously retrieves the status and activity of a user by ID from a specific guild.
+#### **+setautorole**
 
-#### **Attributes Included**
+Sets a default role for new members.
 
-- `status`: User's online status (`online`, `offline`, `dnd`, `idle`).
-- `activities`: A list of current user activities, each containing:
-  - `name`: Name of the activity.
-  - `type`: Type of the activity.
-  - `details`: Additional details (optional).
-  - `state`: Current state or status of the activity.
-  - `large_image_url`: URL for the large activity image.
-  - `small_image_url`: URL for the small activity image.
-- `username`: The user's Discord username.
-- `display_name`: The user's server-specific nickname (if available).
-- `profile_picture`: URL to the user's profile picture.
+| Parameter | Type   | Description                 |
+| --------- | ------ | --------------------------- |
+| role_name | string | The name of the role to set |
 
-### **Security Considerations**
+**Example:**
 
-- **API Key Usage**: Ensure that your API key is kept secret and never hard-coded in your codebase.
-- **Server Access**: The bot can only retrieve user information from servers where it is a member.
-
----
-
-## Deployment
-
-To run the bot and the API service concurrently:
-
-Windows:
-
-```bash
-python app.py
+```plaintext
++setautorole Member
 ```
 
-Linux:
+**Permissions:** Administrator required.
 
-```bash
-python3 app.py
+**Logs Webhook:** Logs the new role configuration.
+
+---
+
+### **status**
+
+Checks the status of API and website.
+
+| Parameter | Type   | Description                                                 |
+| --------- | ------ | ----------------------------------------------------------- |
+| service   | string | "all" (default), "api", or "web" to check specific services |
+
+**Example:**
+
+```plaintext
++status api
 ```
 
----
-
-## Troubleshooting
-
-1. **`AttributeError: 'CustomActivity'`**:
-
-   - This occurs when accessing attributes (`details`) not available on `CustomActivity`.
-   - Solution: The code now handles `CustomActivity` separately using `state`.
-
-2. **Bot Not Fetching User Information**:
-   - Ensure `GUILD_ID` is correct and the bot has permissions to read member data.
+**Returns:** Service health indicators.
 
 ---
 
-## Conclusion
+### **Events**
 
-This API bot allows seamless integration of Discord user presence and activity data into your applications while ensuring security and flexibility with API key authentication.
+#### **on_member_join**
+
+- Assigns roles to new members.
+- Sends a custom welcome message.
+- Logs events and errors.
+
+---
+
+## Error Handling
+
+- Logs significant errors and unauthorized access attempts via the logs webhook.
+- Gracefully handles exceptions for role assignment and status checks.
+
+---
+
+## Contributing
+
+Please follow the existing code structure and naming conventions. For changes or enhancements:
+
+- Use descriptive commit messages.
+- Add relevant test cases.
+
+For more information or troubleshooting, contact the project maintainers.
+
+---
+
+**Last Updated:** 14th January 2025

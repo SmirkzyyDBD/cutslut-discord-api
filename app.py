@@ -9,6 +9,7 @@ from datetime import datetime
 load_dotenv()
 
 intents = discord.Intents.all()
+intents.members = True
 bot = commands.Bot(command_prefix = "+", intents = intents)
 
 app = Flask(__name__)
@@ -28,6 +29,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 WELCOME_WEBHOOK = os.getenv("WELCOME_WEBHOOK")
 API_HEALTH = os.getenv("API_HEALTH")
 WEBSITE_URL = os.getenv("WEBSITE_URL")
+LOGS_WEBHOOK = os.getenv("LOGS_WEBHOOK")
+USER_ROLE = os.getenv("USER_ROLE")
 
 user_status_data = {} # store thingt data for users ;))
 
@@ -43,10 +46,16 @@ def fetch_user(user_id):
     
 @app.route("/api/v1/version", methods = ["GET"])
 def version():
+    api_key = request.headers.get("Authorization")
+    if api_key != API_KEY:
+        return jsonify({"Error": "Unauthorized"}), 401
     return jsonify({"version": API_VERSION}), 200
     
 @app.route("/api/v1/healthcheck", methods = ["GET"])
 def health_check():
+    api_key = request.headers.get("Authorization")
+    if api_key != API_KEY:
+        return jsonify({"Error": "Unauthorized"}), 401
     return jsonify({"health": "Alive"}), 200 
 
 @app.route("/api/v1/userStatus", methods=["GET"])
@@ -117,8 +126,39 @@ async def fetch_user_status(user_id):
 async def on_ready():
     print(f"[+] {bot.user} is online")
     
+auto_roles = {}  # dictionary to store custom default roles
+
+@bot.command(name='setautorole')
+@commands.has_permissions(administrator=True)
+async def set_auto_role(ctx, role_name: str):
+    auto_roles[ctx.guild.id] = role_name
+    await ctx.send(f"Auto role set to `{role_name}` for new members.")
+    async with discord.Webhook.from_url(LOGS_WEBHOOK, adapter=discord.RequestsWebhookAdapter()) as webhook:
+                await webhook.send(f"Auto role set to `{role_name}` for new members.")
+    
 @bot.event
 async def on_member_join(member):
+    role_name = auto_roles.get(member.guild.id, None)
+    if role_name:
+        role = discord.utils.get(member.guild.roles, name=role_name)
+        if role:
+            await member.add_roles(role)
+            
+    try:
+        role = discord.untils.get(member.guild.roles, id = USER_ROLE)
+        if role:
+            await member.add_roles(role)
+            async with discord.Webhook.from_url(LOGS_WEBHOOK, adapter=discord.RequestsWebhookAdapter()) as webhook:
+                await webhook.send(f"Assigned '{role.name}' to {member.name}")
+        else:
+            async with discord.Webhook.from_url(LOGS_WEBHOOK, adapter=discord.RequestsWebhookAdapter()) as webhook: # i know theres a more efficient way to do this pls dont come at me
+                await webhook.send(f"Role ID '{USER_ROLE}' not found")                                              # TODO: optimize/make more efficient
+    except discord.Forbidden:
+        async with discord.Webhook.from_url(LOGS_WEBHOOK, adapter=discord.RequestsWebhookAdapter()) as webhook:
+            await webhook.send("Missing perms to assign roles")
+    except Exception as e:
+        async with discord.Webhook.from_url(LOGS_WEBHOOK, adapter=discord.RequestsWebhookAdapter()) as webhook:
+            await webhook.send(f"An error occured: {e}")
     # Send a message using a webhook for easier intagration
     embed = discord.Embed (
         title = member.guild.name,
