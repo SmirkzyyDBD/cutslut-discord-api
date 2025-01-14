@@ -33,14 +33,24 @@ pip install -r requirements.txt
 Create a `.env` file in the root of your project:
 
 ```
+API_VERSION=api_version (e.g: 1.0.0)
 BOT_TOKEN=your_actual_discord_bot_token
 API_KEY=your_secure_api_key
 GUILD_ID=your_discord_server_id
+WELCOME_WEBHOOK=webhook_link
+API_HEALTH=health_check_api_route
+API_VERSION=api_version_route
+WEBSITE_URL=base_website_url
 ```
 
+- **API_VERSION**: The version your API is on.
 - **BOT_TOKEN**: The token for your Discord bot.
 - **API_KEY**: A secure key for API authorization.
 - **GUILD_ID**: The ID of the Discord server to monitor.
+- **WELCOME_WEBHOOK**: Your Discord webhook link.
+- **API_HEALTH**: API route for your health check.
+- **API_VERSION**: API Route for your version check.
+- **WEBSITE_URL**: Base website URL.
 
 ---
 
