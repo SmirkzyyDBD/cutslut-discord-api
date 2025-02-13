@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 CORS(app, resources={ # cors bc everything dies otherwise
     r"/*": {
-        "origins": ["https://cutslut.app", "https://egirls.date"], # bhvr.gay in the fututure mayabe (they are gay)
+        "origins": ["https://cutslut.app", "https://egirls.date", "https://bhvr.gay"],
         "methods": ["GET", "POST"],
         "allow_headers": ["Authorization", "Content-Type"]
     }
