@@ -1,6 +1,6 @@
 # Discord API Bot Documentation
 
-This documentation outlines the usage, structure, and features of the Cutslut Discord API bot. The bot tracks user status, activity, and profile information for [cutslut.app](https://cutslut.app) and integrates Flask for API handling and Discord.py for server interaction.
+This documentation outlines the usage, structure, and features of the Cutslut Discord API bot. The bot tracks user status, activity, and profile information for [bio link webapp](https://cutslut.app) and integrates Flask for API handling and Discord.py for server interaction.
 
 ---
 
